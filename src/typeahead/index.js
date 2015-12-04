@@ -166,8 +166,12 @@ var Typeahead = React.createClass({
   },
 
   _onOptionSelected: function(option, event) {
-    var nEntry = this.refs.entry.getDOMNode();
-    nEntry.focus();
+    this.refs.entry.getDOMNode().focus();
+	this._setOptionValue(option);
+    return this.props.onOptionSelected(option, event);
+  },
+  // Changes based on https://github.com/yurynix/react-typeahead/commit/1a963818adeded7d1400e44fd521af2df4c246db?diff=split
+  _setOptionValue: function(option) {
 
     var displayOption = this._generateOptionToStringFor(this.props.displayOption);
     var optionString = displayOption(option, 0);
@@ -175,11 +179,10 @@ var Typeahead = React.createClass({
     var formInputOption = this._generateOptionToStringFor(this.props.formInputOption || displayOption);
     var formInputOptionString = formInputOption(option);
 
-    nEntry.value = optionString;
     this.setState({visible: this.getOptionsForValue(optionString, this.props.options),
                    selection: formInputOptionString,
                    entryValue: optionString});
-    return this.props.onOptionSelected(option, event);
+	this.refs.entry.getDOMNode().value = optionString;
   },
 
   _onTextEntryUpdated: function() {
@@ -287,6 +290,13 @@ var Typeahead = React.createClass({
     this.setState({
       visible: this.getOptionsForValue(this.state.entryValue, nextProps.options)
     });
+	if(nextProps.value === this.props.value) {
+	  return;
+	}
+    var options = this.getOptionsForValue(nextProps.value, nextProps.options);
+	if(options.length === 1) {
+		this._setOptionValue(options[0]);
+	}
   },
 
   render: function() {
